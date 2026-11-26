@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="oled">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocalRead — RSVP Speed Reader (PDF, EPUB &amp; Text)</title>
+  <meta name="description" content="Distraction-free RSVP speed reader with Optimal Recognition Point (ORP) focal anchor, adjustable 100–1200 WPM speed &amp; 300→900 ramp training, and 100% client-side PDF, EPUB, and text support." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050507'/%3E%3Cpath d='M32 10v10M32 44v10' stroke='%23ff3b30' stroke-width='4' stroke-linecap='round'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='system-ui,sans-serif' font-size='26' font-weight='700' fill='%23ff3b30'%3ER%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Top Bar -->
+    <header class="top-bar ui-chrome">
+      <div class="brand-group">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="brand-tick"></span>
+          <span class="brand-letter">F</span>
+          <span class="brand-tick"></span>
+        </div>
+        <div class="doc-meta">
+          <div class="doc-title-row">
+            <h1 id="doc-title" class="doc-title">Speed Reading Trainer</h1>
+            <span id="doc-badge" class="doc-badge">DEMO</span>
+          </div>
+          <p id="doc-subtitle" class="doc-subtitle">Built-in RSVP Demo · 300 → 900 WPM</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <select id="section-select" class="section-select hidden" aria-label="Jump to chapter or page"></select>
+
+        <button id="btn-open-input" class="btn btn-primary" type="button" title="Paste text or upload PDF / EPUB (O)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span>Text / PDF / EPUB</span>
+        </button>
+
+        <button id="btn-context" class="btn btn-ghost" type="button" title="View surrounding text (C)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="17" y2="12"/>
+            <line x1="3" y1="18" x2="19" y2="18"/>
+          </svg>
+          <span class="btn-label">Context</span>
+        </button>
+
+        <button id="btn-settings" class="btn btn-ghost" type="button" title="Display &amp; reading settings (S)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="btn-label">Settings</span>
+        </button>
+
+        <button id="btn-fullscreen" class="btn btn-icon" type="button" title="Toggle fullscreen (F)" aria-label="Toggle fullscreen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Focal Reading Stage -->
+    <main class="stage-container" id="stage-container">
+      <div class="stage-hud" aria-live="off">
+        <span id="hud-wpm" class="hud-pill">300 WPM</span>
+        <span id="hud-mode" class="hud-pill hud-pill-accent hidden">RAMP 300 → 900</span>
+      </div>
+
+      <div id="rsvp-stage" class="rsvp-stage" role="button" tabindex="0" aria-label="Reading stage. Click or press Space to play or pause.">
+        <div class="reticle-rail reticle-top" aria-hidden="true">
+          <span class="reticle-tick"></span>
+        </div>
+
+        <div id="word-display" class="word-display" aria-live="off">
+          <span id="word-left" class="word-left"></span>
+          <span id="word-orp" class="word-orp"></span>
+          <span id="word-right" class="word-right"></span>
+        </div>
+
+        <div class="reticle-rail reticle-bottom" aria-hidden="true">
+          <span class="reticle-tick"></span>
+        </div>
+      </div>
+
+      <p id="stage-hint" class="stage-hint ui-chrome">
+        Focus on the highlighted focal letter · Press <kbd>Space</kbd> to play/pause · <kbd>↑</kbd><kbd>↓</kbd> speed · Drop any <strong>PDF</strong>, <strong>EPUB</strong>, or <strong>TXT</strong> file anywhere
+      </p>
+    </main>
+
+    <!-- Bottom Controls -->
+    <footer class="control-deck ui-chrome">
+      <!-- Progress Scrubber -->
+      <div class="progress-row">
+        <div class="scrubber-wrap">
+          <input
+            id="progress-slider"
+            class="progress-slider"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            aria-label="Reading position"
+          />
+          <div id="section-ticks" class="section-ticks" aria-hidden="true"></div>
+        </div>
+        <div class="progress-stats">
+          <span id="stat-words">1 / 1</span>
+          <span class="stat-dot" aria-hidden="true">·</span>
+          <span id="stat-percent">0%</span>
+          <span class="stat-dot" aria-hidden="true">·</span>
+          <span id="stat-eta">0:00 left</span>
+        </div>
+      </div>
+
+      <!-- Playback + Speed Deck -->
+      <div class="controls-grid">
+        <!-- Transport Controls -->
+        <div class="transport-group">
+          <button id="btn-restart" class="btn btn-icon" type="button" title="Restart from beginning (R)" aria-label="Restart">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+          </button>
+
+          <button id="btn-prev-sentence" class="btn btn-icon" type="button" title="Previous sentence (Shift+←)" aria-label="Previous sentence">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="11 17 6 12 11 7"/>
+              <polyline points="18 17 13 12 18 7"/>
+            </svg>
+          </button>
+
+          <button id="btn-prev-word" class="btn btn-icon" type="button" title="Previous word (←)" aria-label="Previous word">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+
+          <button id="btn-play" class="btn-play" type="button" title="Play / Pause (Space)" aria-label="Play">
+            <svg id="icon-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="6 4 20 12 6 20 6 4"/>
+            </svg>
+            <svg id="icon-pause" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
+          </button>
+
+          <button id="btn-next-word" class="btn btn-icon" type="button" title="Next word (→)" aria-label="Next word">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          <button id="btn-next-sentence" class="btn btn-icon" type="button" title="Next sentence (Shift+→)" aria-label="Next sentence">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="13 17 18 12 13 7"/>
+              <polyline points="6 17 11 12 6 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Speed Controls -->
+        <div class="speed-group">
+          <div class="speed-header">
+            <div class="speed-stepper">
+              <button id="btn-wpm-down" class="btn-mini" type="button" title="Decrease speed by 25 WPM (↓)" aria-label="Decrease WPM">−</button>
+              <div class="wpm-readout">
+                <span id="wpm-value" class="wpm-number">300</span>
+                <span class="wpm-unit">WPM</span>
+              </div>
+              <button id="btn-wpm-up" class="btn-mini" type="button" title="Increase speed by 25 WPM (↑)" aria-label="Increase WPM">+</button>
+            </div>
+
+            <div class="speed-presets" role="group" aria-label="Speed presets">
+              <button class="preset-pill" type="button" data-wpm="250">250</button>
+              <button class="preset-pill" type="button" data-wpm="300">300</button>
+              <button class="preset-pill" type="button" data-wpm="450">450</button>
+              <button class="preset-pill" type="button" data-wpm="600">600</button>
+              <button class="preset-pill" type="button" data-wpm="900">900</button>
+            </div>
+
+            <button id="btn-ramp-toggle" class="preset-pill ramp-pill" type="button" aria-pressed="false" title="Gradually accelerate from start WPM to target WPM">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+              <span>Ramp 300→900</span>
+            </button>
+          </div>
+
+          <div id="fixed-speed-row" class="speed-slider-row">
+            <span class="slider-bound">100</span>
+            <input
+              id="wpm-slider"
+              class="wpm-slider"
+              type="range"
+              min="100"
+              max="1200"
+              step="10"
+              value="300"
+              aria-label="Words per minute"
+            />
+            <span class="slider-bound">1200</span>
+          </div>
+
+          <div id="ramp-config-row" class="ramp-config-row hidden">
+            <label class="ramp-field">
+              <span>Start WPM</span>
+              <input id="ramp-start" type="number" min="100" max="1200" step="25" value="300" />
+            </label>
+            <span class="ramp-arrow" aria-hidden="true">→</span>
+            <label class="ramp-field">
+              <span>End WPM</span>
+              <input id="ramp-end" type="number" min="100" max="1500" step="25" value="900" />
+            </label>
+            <span class="ramp-note">Accelerates smoothly across the passage</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Global Drag-and-Drop Overlay -->
+  <div id="drop-overlay" class="drop-overlay hidden" aria-hidden="true">
+    <div class="drop-overlay-card">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h2>Drop your file to start speed reading</h2>
+      <p>Supports <strong>PDF</strong>, <strong>EPUB</strong>, <strong>TXT</strong>, and <strong>Markdown</strong> — processed 100% locally in your browser.</p>
+    </div>
+  </div>
+
+  <!-- Input / Upload Modal -->
+  <div id="modal-input" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-input-title">
+    <div class="modal-card modal-wide">
+      <div class="modal-header">
+        <div>
+          <h2 id="modal-input-title">Load Text, PDF, or EPUB</h2>
+          <p class="modal-subtitle">Everything is parsed locally in your browser. Nothing is ever uploaded.</p>
+        </div>
+        <button class="btn btn-icon modal-close" type="button" data-close-modal="modal-input" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Upload Dropzone -->
+        <label id="file-dropzone" class="file-dropzone" for="file-input">
+          <input id="file-input" type="file" accept=".pdf,.epub,.txt,.md,application/pdf,application/epub+zip,text/plain,text/markdown" hidden />
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <polyline points="9 15 12 12 15 15"/>
+            </svg>
+          </div>
+          <div class="dropzone-copy">
+            <strong>Click to choose a file</strong> or drag &amp; drop here
+            <span>Accepted formats: .pdf, .epub, .txt, .md</span>
+          </div>
+        </label>
+
+        <!-- Parsing Progress Bar -->
+        <div id="parse-status" class="parse-status hidden" aria-live="polite">
+          <div class="parse-status-row">
+            <span id="parse-status-label">Processing file…</span>
+            <span id="parse-status-pct">0%</span>
+          </div>
+          <div class="parse-bar">
+            <div id="parse-bar-fill" class="parse-bar-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div id="parse-error" class="parse-error hidden" role="alert"></div>
+
+        <div class="divider-or"><span>or paste text directly</span></div>
+
+        <div class="paste-form">
+          <input id="paste-title" class="text-input" type="text" placeholder="Optional title (e.g., Article or Chapter notes)" />
+          <textarea id="paste-textarea" class="text-area" rows="7" placeholder="Paste any article, essay, notes, or book excerpt here…"></textarea>
+          <div class="paste-actions">
+            <div class="sample-links">
+              <span>Try sample:</span>
+              <button id="btn-sample-trainer" class="link-btn" type="button">300→900 WPM Trainer</button>
+              <button id="btn-sample-classic" class="link-btn" type="button">Practice Passage</button>
+            </div>
+            <button id="btn-load-paste" class="btn btn-primary" type="button">Load Text</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Peek Drawer -->
+  <div id="modal-context" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-context-title">
+    <div class="modal-card modal-wide">
+      <div class="modal-header">
+        <div>
+          <h2 id="modal-context-title">Reading Context</h2>
+          <p class="modal-subtitle">Click any word below to jump straight to that position.</p>
+        </div>
+        <button class="btn btn-icon modal-close" type="button" data-close-modal="modal-context" aria-label="Close">✕</button>
+      </div>
+      <div id="context-body" class="modal-body context-body"></div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="modal-settings" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-settings-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="modal-settings-title">Reader Settings</h2>
+          <p class="modal-subtitle">Customize focal guide, typography, pacing, and theme.</p>
+        </div>
+        <button class="btn btn-icon modal-close" type="button" data-close-modal="modal-settings" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body settings-body">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Smart punctuation pauses</div>
+            <div class="setting-desc">Briefly linger on commas, periods, paragraph breaks, and long words</div>
+          </div>
+          <label class="switch">
+            <input id="opt-smart-pacing" type="checkbox" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">3-2-1 focus countdown</div>
+            <div class="setting-desc">Lock your gaze onto the red reticle before words start</div>
+          </div>
+          <label class="switch">
+            <input id="opt-countdown" type="checkbox" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Dim controls during playback</div>
+            <div class="setting-desc">Fade surrounding UI while reading to minimize distraction</div>
+          </div>
+          <label class="switch">
+            <input id="opt-focus-dim" type="checkbox" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Show focal guide rails</div>
+            <div class="setting-desc">Horizontal framing rails with center ORP alignment ticks</div>
+          </div>
+          <label class="switch">
+            <input id="opt-show-reticle" type="checkbox" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-row-compact">
+            <span class="setting-label">Word size</span>
+            <span id="opt-font-size-val" class="setting-value">68px</span>
+          </div>
+          <input id="opt-font-size" class="wpm-slider" type="range" min="36" max="104" step="2" value="68" />
+        </div>
+
+        <div class="setting-block">
+          <span class="setting-label">Font family</span>
+          <div class="pill-group" id="opt-font-family">
+            <button class="pill-choice active" type="button" data-font="sans">Sans</button>
+            <button class="pill-choice" type="button" data-font="serif">Serif</button>
+            <button class="pill-choice" type="button" data-font="mono">Monospace</button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <span class="setting-label">Focal letter (ORP) color</span>
+          <div class="swatch-group" id="opt-orp-color">
+            <button class="swatch active" type="button" data-color="#ff3b30" style="--swatch:#ff3b30" aria-label="Crimson Red"></button>
+            <button class="swatch" type="button" data-color="#ff9f0a" style="--swatch:#ff9f0a" aria-label="Amber"></button>
+            <button class="swatch" type="button" data-color="#32d7ff" style="--swatch:#32d7ff" aria-label="Cyan"></button>
+            <button class="swatch" type="button" data-color="#30d158" style="--swatch:#30d158" aria-label="Emerald"></button>
+            <button class="swatch" type="button" data-color="#bf5af2" style="--swatch:#bf5af2" aria-label="Violet"></button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <span class="setting-label">Theme</span>
+          <div class="pill-group" id="opt-theme">
+            <button class="pill-choice active" type="button" data-theme="oled">OLED Black</button>
+            <button class="pill-choice" type="button" data-theme="dark">Graphite</button>
+            <button class="pill-choice" type="button" data-theme="sepia">Sepia</button>
+            <button class="pill-choice" type="button" data-theme="light">Paper</button>
+          </div>
+        </div>
+
+        <div class="shortcuts-box">
+          <div class="setting-label">Keyboard shortcuts</div>
+          <div class="shortcuts-grid">
+            <div><kbd>Space</kbd> Play / Pause</div>
+            <div><kbd>↑</kbd> / <kbd>↓</kbd> ±25 WPM</div>
+            <div><kbd>←</kbd> / <kbd>→</kbd> ±1 Word</div>
+            <div><kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> ±1 Sentence</div>
+            <div><kbd>R</kbd> Restart</div>
+            <div><kbd>O</kbd> Load / Paste</div>
+            <div><kbd>C</kbd> Context View</div>
+            <div><kbd>F</kbd> Fullscreen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- Self-hosted JSZip for 100% offline/client-side EPUB parsing -->
+  <script src="./vendor/jszip.min.js"></script>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
